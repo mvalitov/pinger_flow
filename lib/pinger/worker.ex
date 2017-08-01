@@ -52,16 +52,15 @@ defmodule Pinger.Worker do
     end
 
     defp save(proxy, conn) do
-        Logger.warn "#{inspect(self)} save #{inspect(proxy)}"
+        Logger.warn inspect(proxy)
         Proxy.save(proxy, conn)
     end
 
     defp ping(proxy, options) do
-        Logger.debug "#{inspect(self)} ping proxy #{proxy.url}"
         ip = Pinger.Request.ping([proxy: proxy.url, options: options])
         case ip do
         %HTTPoison.Error{} ->
-            Logger.info "#{inspect(proxy)} is BAD"
+            Logger.info "#{proxy.url} is BAD"
             nil
         %{} -> %{proxy | ip: ip["ip"]["ip"], country_code: ip["ip"]["country_code"]}
         # %{} -> geo = lookup(ip) %{proxy | ip: ip, country_code: geo.country, region_code: geo.region}
