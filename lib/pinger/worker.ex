@@ -52,7 +52,7 @@ defmodule Pinger.Worker do
     end
 
     defp save(proxy, conn) do
-        Logger.warn inspect(proxy)
+        Logger.info inspect(proxy)
         Proxy.save(proxy, conn)
     end
 
