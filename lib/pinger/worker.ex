@@ -64,6 +64,7 @@ defmodule Pinger.Worker do
             Logger.info "#{inspect(proxy)} is BAD"
             nil
         %{} -> %{proxy | ip: ip["ip"]["ip"], country_code: ip["ip"]["country_code"]}
+        # %{} -> geo = lookup(ip) %{proxy | ip: ip, country_code: geo.country, region_code: geo.region}
         end
     end
 

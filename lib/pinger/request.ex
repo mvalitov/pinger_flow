@@ -1,7 +1,7 @@
 defmodule Pinger.Request do
   require Logger
   def ping(params) do
-    url = params[:url] || "https://ip.nf/me.json"
+    url = params[:url] || "https://ip.nf/me.json" #"https://api.ipify.org" 
     proxy = case params[:proxy] do
       nil -> raise "Proxy is nil"
       _-> params[:proxy]
@@ -17,6 +17,7 @@ defmodule Pinger.Request do
         {:ok, response} ->
           %HTTPoison.Response{body: body, headers: list, status_code: integer} = response
           Poison.Parser.parse!(body)
+          # body
         {:error, reason} ->
           reason
       end
