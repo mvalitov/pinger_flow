@@ -57,7 +57,7 @@ defmodule Pinger.Worker do
     end
 
     defp ping(proxy, options) do
-        ip = Pinger.Request.ping([proxy: proxy.url, options: options])
+        ip = Pinger.Request.ping(%{"proxy" => proxy.url, "options" => options})
         case ip do
         %HTTPoison.Error{} ->
             Logger.info "#{proxy.url} is BAD"
