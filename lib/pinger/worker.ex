@@ -20,23 +20,23 @@ defmodule Pinger.Worker do
         groups = Group.enabled
         Logger.debug "#{inspect(self())} LOADER init #{inspect(groups)}"
         options = Settings.by_name("pinger")
-        Logger.debug "#{inspect(self)} start parallel map"
+        # Logger.debug "#{inspect(self)} start parallel map"
         # Parallel.pmap(groups, fn(group) -> run_flow(group, options.value["request"], conn) end)
         run_flow(groups, options.value["request"], conn)
-        Logger.debug "#{inspect(self)} end parallel map"
+        # Logger.debug "#{inspect(self)} end parallel map"
         schedule_work() # Reschedule once more
         {:noreply, conn}
     end
 
     defp run_flow(groups, options, conn) do
         Logger.debug "#{inspect(self)} start run flow"
-        proxies = Enum.reduce(groups, [], fn(group, acc) ->
+        Enum.reduce(groups, [], fn(group, acc) ->
             cache = Downloader.download(group)
             |> generate_proxies(group.id)
             save_count(conn, length(cache), group.id)
             cache ++ acc
         end)
-        proxies
+        |> Enum.shuffle()
         |> Flow.from_enumerable(
             stages: Application.get_env(:pinger, :stages),
             min_demand: Application.get_env(:pinger, :min_demand),
