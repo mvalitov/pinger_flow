@@ -21,19 +21,27 @@ defmodule Pinger.Worker do
         Logger.debug "#{inspect(self())} LOADER init #{inspect(groups)}"
         options = Settings.by_name("pinger")
         Logger.debug "#{inspect(self)} start parallel map"
-        Parallel.pmap(groups, fn(group) -> run_flow(group, options.value["request"], conn) end)
+        # Parallel.pmap(groups, fn(group) -> run_flow(group, options.value["request"], conn) end)
+        run_flow(groups, options.value["request"], conn)
         Logger.debug "#{inspect(self)} end parallel map"
         schedule_work() # Reschedule once more
         {:noreply, conn}
     end
 
-    defp run_flow(group, options, conn) do
+    defp run_flow(groups, options, conn) do
         Logger.debug "#{inspect(self)} start run flow"
-        proxies = Downloader.download(group)
-        |> generate_proxies(group.id)
-        save_count(conn, length(proxies), group.id)
+        proxies = Enum.reduce(groups, [], fn(group, acc) ->
+            cache = Downloader.download(group)
+            |> generate_proxies(group.id)
+            save_count(conn, length(cache), group.id)
+            cache ++ acc
+        end)
         proxies
-        |> Flow.from_enumerable(stages: Application.get_env(:pinger, :stages), min_demand: Application.get_env(:pinger, :min_demand), max_demand: Application.get_env(:pinger, :max_demand))
+        |> Flow.from_enumerable(
+            stages: Application.get_env(:pinger, :stages),
+            min_demand: Application.get_env(:pinger, :min_demand),
+            max_demand: Application.get_env(:pinger, :max_demand)
+        )
         |> Flow.map(fn(p) -> ping(p, options) end)
         |> Flow.reject(fn(x) -> x == nil end)
         |> Flow.map(fn(p) -> save(p, conn) end)

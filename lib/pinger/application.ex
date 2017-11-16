@@ -5,10 +5,6 @@ defmodule Pinger.Application do
 
   use Application
 
-  @max_importers Application.get_env(:pinger, :max_importers)
-  @max_pingers Application.get_env(:pinger, :max_pingers)
-  @max_savers Application.get_env(:pinger, :max_savers)
-
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
